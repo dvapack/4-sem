@@ -14,7 +14,7 @@ char* copy(char *&to_copy, int& size)
     return result;
 }
 
-void push_back(char *&string, int& size, char& symbol, int& i)
+void push_back(char *&string, int& size, char symbol, int& i)
 {
     if (i >= size)
     {
