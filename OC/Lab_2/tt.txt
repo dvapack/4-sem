@@ -1,0 +1,41 @@
+bool move_command(std::string full_file_name, std::string destination)
+{
+	std::ifstream file(full_file_name);
+	if (!file.is_open()) // проверка на существование
+	{
+        std::cout << "File with this name does not exist\n";
+        file.close();
+        return 0;
+	}
+    int file_name_start = 0; // индексация с 0
+    std::string file_path;
+    // выделяем часть с директорией у названия файла
+    for (int i = full_file_name.length() - 1; i > 0; --i)
+    {
+        if (full_file_name[i] == '/')
+            file_name_start = i;
+    }
+    // выделяем часть с директорией у destination
+    bool was_dot = false;
+    int dest_start = 0; // индексация с 0
+    for (int i = destination.length() - 1; i > 0; --i)
+    {
+        if (destination[i] == '.')
+            was_dot = true;
+        if (was_dot && destination[i] == '/')
+            dest_start = i;
+    }
+    if (file_name_start) // если у нас полный путь
+        file_path = full_file_name.substr(0, file_name_start); // копируем часть с директорией в отдельную строку
+    else // иначе
+            file_path = get_current_dir_name();
+    if (file_path == destination)
+    {
+        std::cout << "You cant move a file into itself\n";
+        return 0;
+    }
+    if (!dest_start) //если у нас не указано новое название файла, дописываем текущее
+        destination += full_file_name.substr(file_name_start, full_file_name.size());
+    std::cout << "Completed\n";
+    return rename(full_file_name.c_str(), destination.c_str());
+}
