@@ -1,4 +1,4 @@
-﻿#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "ws2_32.lib")
 #include <winsock2.h>
 #include <iostream>
 #include <string>
@@ -20,7 +20,22 @@ struct Map
 	std::vector <char> symbols;
 };
 
+void output(int res_len, char* symbols, int* nums)
+{
+	for (int i = 0; i < res_len / sizeof(int); ++i)
+	{
+		std::cout << "Symbol: " << symbols[i] <<
+			" - " << nums[i] << std::endl;
+	}
+}
 
+std::string string_input()
+{
+	std::string input;
+	std::cout << "Enter string: ";
+	std::getline(std::cin, input);
+	return input;
+}
 
 
 
@@ -45,11 +60,11 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	std::cout << "Client Connected to server!\n";
-	std::string input;
-	std::cout << "Enter string: ";
-	std::getline(std::cin, input);
+	std::string input = string_input();
+	// сначала отправляем длину строки
 	int len = input.length();
 	send(Connection, (char*)&len, sizeof(int), NULL);
+	// потом саму строку, но преобразованную в массив чар
 	char* msg;
 	msg = new char[len + 1];
 	for (int i = 0; i < len; ++i)
@@ -57,21 +72,19 @@ int main(int argc, char* argv[]) {
 	msg[len] = '\0';
 	send(Connection, msg, len, NULL);
 	Map result;
+	// получаем длину результата
 	int res_len;
 	recv(Connection, (char*)&res_len, sizeof(int), NULL);
+	// теперь символы
 	char* symbols = new char[res_len];
 	recv(Connection, symbols, res_len, NULL);
 	res_len *= sizeof(int);
 	char* res = new char[res_len];
+	// теперь цифры, но сначала как массив чаров
 	recv(Connection, res, res_len, NULL);
+	// преобразовываем в массив интов
 	int* nums = (int*)res;
-	for (int i = 0; i < res_len/sizeof(int); ++i)
-	{
-		std::cout << "Symbol: " << symbols[i] <<
-			" - " << nums[i] << std::endl;
-	}
-	std::string i;
-	std::getline(std::cin, i);
+	output(res_len, symbols, nums);
 	std::cout << "Server has been stopped\n";
 	if (closesocket(Connection) == SOCKET_ERROR)
 		std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
@@ -80,5 +93,8 @@ int main(int argc, char* argv[]) {
 	delete[] msg;
 	delete[] res;
 	delete[] symbols;
+	// чтобы консоль не закрывалась
+	std::string i;
+	std::getline(std::cin, i);
 	return 0;
 }
