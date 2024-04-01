@@ -1,4 +1,4 @@
-﻿#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "ws2_32.lib")
 #include <winsock2.h>
 #include <iostream>
 #include <string>
@@ -22,7 +22,7 @@ struct Map
 	std::vector <char> symbols;
 };
 
-void start_client_session()
+void start_client()
 {
 	const char* navigation_command = "cd C:\\Users\\mserg\\source\\repos\\OC_Lab_2_client\\x64\\Debug";
 	const char* run_command = "start C:\\Users\\mserg\\source\\repos\\OC_Lab_2_client\\x64\\Debug\\OC_Lab_2_client.exe";
@@ -37,7 +37,7 @@ void start_client_session()
 	system(run_command);
 }
 
-void string_check(int len, char* msg, Map& result)
+void string_check(char* msg, Map& result) // подсчитывает количество каждого символа в строке
 {
 	std::string mes(msg);
 	int i = 0;
@@ -59,7 +59,7 @@ void string_check(int len, char* msg, Map& result)
 	}
 }
 
-bool check_input(std::string& input)
+bool check_input(std::string& input) // проверка на инт
 {
 	std::getline(std::cin, input);
 	for (int i = 0; i < input.length(); ++i)
@@ -71,14 +71,18 @@ bool check_input(std::string& input)
 	return false;
 }
 
+int input()
+{
+	std::string inp;
+	std::cout << "Enter a positive num 1 <= n <= 100: ";
+	while (!check_input(inp))
+		std::cout << "Error! Enter a positive num 1 <= n <= 100\n";
+	return stoi(inp);
+}
+
 int main(int argc, char* argv[])
 {
-	int n;
-	std::string input;
-	std::cout << "Enter a positive num 1 <= n <= 100: ";
-	while (!check_input(input))
-		std::cout << "Error! Enter a positive num 1 <= n <= 100\n";
-	n = stoi(input);
+	int n = input();
 	//Загрузка библиотеки 
 	WSAData wsaData; //создаем структуру для загрузки
 	WORD DLLVersion = MAKEWORD(2, 1); // Версия библиотеки winsock
@@ -109,7 +113,7 @@ int main(int argc, char* argv[])
 	SOCKET newConnection;
 	for (int i = 0; i < n; ++i)
 	{
-		start_client_session();
+		start_client();
 		newConnection = accept(sListen, (SOCKADDR*)&addr, &sizeOfAddr);
 		if (!newConnection)
 		{
@@ -122,14 +126,18 @@ int main(int argc, char* argv[])
 		else
 		{
 			std::cout << "Client Connected!\n";
+			// получаем сначала длину строки
 			int len;
 			recv(newConnection, (char*)&len, sizeof(int), NULL);
+			// затем саму строку
 			char* message;
 			message = new char[len + 1];
 			message[len] = '\0';
 			recv(newConnection, message, len, NULL);
+			// проводим подсчёт символов
 			Map result;
-			string_check(len, message, result);
+			string_check(message, result);
+			// сохраняем длину отправляемого сообщения
 			int nums_res_len = result.nums.size();
 			int* nums = new int[nums_res_len];
 			char* symbols = new char[nums_res_len];
@@ -139,8 +147,11 @@ int main(int argc, char* argv[])
 				symbols[i] = result.symbols[i];
 			}
 			char* nums_res = (char*)nums;
+			// отправляем длину
 			send(newConnection, (char*)&nums_res_len, sizeof(int), NULL);
+			// отправляем символы отдельно
 			send(newConnection, symbols, nums_res_len, NULL);
+			//отправляем цифры отдельно
 			send(newConnection, nums_res, sizeof(int)*nums_res_len, NULL);
 			delete[] nums;
 			delete[] symbols;
