@@ -1,4 +1,4 @@
-﻿#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "ws2_32.lib")
 #include <winsock2.h>
 #include <iostream>
 #include <string>
@@ -21,18 +21,9 @@
 доход получен.
 */
 
-SOCKET Connections[100];
-int counter = 0;
-
 struct Hotel
 {
 	int income;
-	const int cheep_room_price = 500;
-	const int medium_room_price = 700;
-	const int luxury_room_price = 900;
-	int cheep_amount;
-	int medium_amount;
-	int luxury_amount;
 	int cheep_available;
 	int medium_available;
 	int luxury_available;
@@ -40,9 +31,6 @@ struct Hotel
 	Hotel()
 	{
 		income = 0;
-		cheep_amount = 0;
-		medium_amount = 0;
-		luxury_amount = 0;
 		cheep_available = 4;
 		medium_available = 2;
 		luxury_available = 2;
@@ -51,8 +39,8 @@ struct Hotel
 
 void start_client()
 {
-	const char* navigation_command = "cd C:\\Users\\mserg\\source\\repos\\OC_Lab_2_client\\x64\\Debug";
-	const char* run_command = "start C:\\Users\\mserg\\source\\repos\\OC_Lab_2_client\\x64\\Debug\\OC_Lab_2_client.exe";
+	const char* navigation_command = "cd C:\\Users\\mserg\\source\\repos\\OC_Lab_5_client\\x64\\Debug";
+	const char* run_command = "start C:\\Users\\mserg\\source\\repos\\OC_Lab_5_client\\x64\\Debug\\OC_Lab_5_client.exe";
 	// проверка на случай непредвиденных обстоятельств
 	int navigation_failure = system(navigation_command);
 	if (navigation_failure)
@@ -64,6 +52,58 @@ void start_client()
 	system(run_command);
 }
 
+void output(const Hotel& hotel, const int tourists)
+{
+	std::cout << "Income is: " << hotel.income << "\nThere were " <<
+		tourists << " tourists in this hotel\n";
+}
+
+bool decision(int money, Hotel& hotel)
+{
+	if (hotel.luxury_available)
+		if (money >= 900)
+		{
+			hotel.luxury_available--;
+			hotel.income += 900;
+			return true;
+		}
+	if (hotel.medium_available)
+		if (money >= 700)
+		{
+			hotel.medium_available--;
+			hotel.income += 700;
+			return true;
+		}
+	if (hotel.cheep_available)
+		if (money >= 500)
+		{
+			hotel.cheep_available--;
+			hotel.income += 500;
+			return true;
+		}
+	return false;
+}
+
+bool check_input(std::string& input) // проверка на инт
+{
+	std::getline(std::cin, input);
+	for (int i = 0; i < input.length(); ++i)
+		if (!isdigit(input[i]))
+			return false;
+	int n = stoi(input);
+	if (n >= 1 && n <= 16)
+		return true;
+	return false;
+}
+
+int input()
+{
+	std::string inp;
+	std::cout << "Enter a positive num 1 <= n <= 16: ";
+	while (!check_input(inp))
+		std::cout << "Error! Enter a positive num 1 <= n <= 16\n";
+	return stoi(inp);
+}
 
 
 int main(int argc, char* argv[])
@@ -71,7 +111,8 @@ int main(int argc, char* argv[])
 	//Загрузка библиотеки 
 	WSAData wsaData; //создаем структуру для загрузки
 	WORD DLLVersion = MAKEWORD(2, 1); // Версия библиотеки winsock
-	if (WSAStartup(DLLVersion, &wsaData) != 0) { // проверка подключения
+	if (WSAStartup(DLLVersion, &wsaData) != 0)
+	{ // проверка подключения
 		std::cerr << "Error: failed to link library.\n";
 		return 1;
 	}
@@ -82,75 +123,139 @@ int main(int argc, char* argv[])
 	addr.sin_port = htons(1111);
 	addr.sin_family = AF_INET;
 	SOCKET sListen = socket(AF_INET, SOCK_STREAM, NULL); //сокет для прослушивания порта
-	if (bind(sListen, (SOCKADDR*)&addr, sizeOfAddr) == SOCKET_ERROR) {
+	if (bind(sListen, (SOCKADDR*)&addr, sizeOfAddr) == SOCKET_ERROR)
+	{
 		//привязка адреса сокету
 		printf("Error bind %d\n", WSAGetLastError());
 		closesocket(sListen);
 		WSACleanup();
 		return 1;
 	} //подключение прослушивания с максимальной очередью
-	if (listen(sListen, SOMAXCONN) == SOCKET_ERROR) {
+	if (listen(sListen, SOMAXCONN) == SOCKET_ERROR)
+	{
 		std::cout << "Listen failed;\n";
 		closesocket(sListen);
 		WSACleanup();
 		return 1;
 	}
-	HANDLE hSemaphore = CreateSemaphore(NULL, 2, 2, L"semaphore");
-	if (!hSemaphore)
-	{
-		std::cout << "Failure in semaphore creation!" << '\n';
-		exit(1);
-	}
-	int i = 0;
-	hSemaphore = CreateSemaphore(NULL, glv::max_users, glv::max_users, NULL);
-	SOCKET newConnection;
-	for (int i = 0; i < n; ++i)
-	{
+	HANDLE hSemaphore;
+	//Создание семафора, контролирующего до 8 обращений одновременно
+	hSemaphore = CreateSemaphore(NULL, 8, 8, L"semaphore");
+	if (hSemaphore == NULL)
+		printf("CreateSemaphore error: %d\n", GetLastError());
+	size_t tourist_number = 0;
+	Hotel hotel;
+	std::vector <SOCKET> Sockets(16); //вектор для сокетов
+	size_t c_num = 0;
+	int n = input(); //для количества резидентов (клиентов)
+	HANDLE pool[3] = {
+	CreateEvent(NULL, FALSE, FALSE, L"Available"),
+	CreateEvent(NULL, FALSE, FALSE, L"Tourist"),
+	CreateEvent(NULL, FALSE, FALSE, L"eeeeeeend")
+	};
+
+	for (uint8_t i = 0; i < 2; ++i)
+		if (!pool[i])
+			std::cerr << GetLastError() << std::endl;
+	//задаем информацию для окна открытия
+	STARTUPINFO si;//структура
+	PROCESS_INFORMATION pi;// структура с информацией о процессе
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);// указываем размер
+	ZeroMemory(&pi, sizeof(pi));
+	for (uint8_t i = 0; i < n; i++)
+	{ // окна для клиентов
 		start_client();
-		newConnection = accept(sListen, (SOCKADDR*)&addr, &sizeOfAddr);
-		if (!newConnection)
-		{
-			std::cout << "Error in connect!\n";
-			if (closesocket(sListen) == SOCKET_ERROR)
-				std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
-			WSACleanup();
-			return 1;
-		}
-		else
-		{
-			std::cout << "Client Connected!\n";
-			// получаем сначала длину строки
-			int len;
-			recv(newConnection, (char*)&len, sizeof(int), NULL);
-			// затем саму строку
-			char* message;
-			message = new char[len + 1];
-			message[len] = '\0';
-			recv(newConnection, message, len, NULL);
-			// проводим подсчёт символов
-			Map result;
-			string_check(message, result);
-			// сохраняем длину отправляемого сообщения
-			int nums_res_len = result.nums.size();
-			int* nums = new int[nums_res_len];
-			char* symbols = new char[nums_res_len];
-			for (int i = 0; i < nums_res_len; ++i)
-			{
-				nums[i] = result.nums[i];
-				symbols[i] = result.symbols[i];
-			}
-			char* nums_res = (char*)nums;
-			// отправляем длину
-			send(newConnection, (char*)&nums_res_len, sizeof(int), NULL);
-			// отправляем символы отдельно
-			send(newConnection, symbols, nums_res_len, NULL);
-			//отправляем цифры отдельно
-			send(newConnection, nums_res, sizeof(int) * nums_res_len, NULL);
-			delete[] nums;
-			delete[] symbols;
-		}
-		Connections[i] = newConnection;
-		++counter;
 	}
+	for (uint8_t i = 0; i < n; i++)
+	{ //сокеты для соединения с клиентом
+		Sockets[i] = accept(sListen, (SOCKADDR*)&addr, &sizeOfAddr);
+	}
+	while (n) 
+	{
+		//приостанавливает поток пока любой из объектов не перейдет
+		// в сигнальное состояние или не закончится время ожидания
+		int ind = WaitForMultipleObjects(3, pool, FALSE, INFINITE);
+		std::wcout << ind << std::endl;
+		if (ind == 0)
+		{
+			c_num = tourist_number;
+			std::cout << "Hotel is ready to serve a tourist!\n";
+			++tourist_number;
+		}
+		if (ind == 1) {
+			std::cout << "Client " << c_num << " is ready to connect.\n";
+			std::cout << "We receive info about tourist...\n";
+			// получаем количество денег
+			int money;
+			if (recv(Sockets[c_num], (char*)&money, sizeof(int), NULL) == -1)
+			{
+				std::cerr << "Error, client num " << c_num << " seems to be closed\n";
+					if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+						std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+					if (n == 1)
+					{
+						WSACleanup();
+							return 1;
+					}
+				continue;
+			}
+			bool in_hotel = decision(money, hotel);
+			// отправляем результат
+			if (send(Sockets[c_num], (char*)&in_hotel, sizeof(bool), NULL) == -1)
+			{
+				std::cerr << "Error, client num " << c_num << " seems to be closed\n";
+				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+					std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				if (n == 1)
+				{
+					WSACleanup();
+					return 1;
+				}
+				continue;
+			}
+			// теперь номер клиента
+			if (send(Sockets[c_num], (char*)&c_num, sizeof(size_t), NULL) == -1)
+			{
+				std::cerr << "Error, client num " << c_num << " seems to be closed\n";
+				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+					std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				if (n == 1)
+				{
+					WSACleanup();
+					return 1;
+				}
+				continue;
+			}
+			std::cout << "Tourist # " << tourist_number << " with " <<
+				money;
+			if (in_hotel)
+				std::cout << " is in hotel\n";
+			else std::cout << " is in savanna\n";
+		}
+		if (ind == 2)
+		{
+			std::cout << "Client " << c_num << " was disconnected.\n";
+			ReleaseSemaphore(hSemaphore, 1, NULL);
+			//отключение клиента
+			--n;
+		}
+	}
+	output(hotel, tourist_number);
+	std::cout << "Work completed successfully!\n";
+	// Close thread handles.
+	for (uint8_t i = 0; i < 3; ++i)
+	{
+		CloseHandle(pool[i]);
+	}
+	for (uint8_t i = 0; i <= c_num; ++i)
+	{
+		closesocket(Sockets[c_num]);
+	}
+	CloseHandle(hSemaphore);
+	if (closesocket(sListen) == SOCKET_ERROR)
+		std::cerr << "Failed to terminate connection.\n Error code: "
+		<< WSAGetLastError();
+	WSACleanup();
 	return 0;
 }
