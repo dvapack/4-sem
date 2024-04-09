@@ -63,25 +63,75 @@ int main(int argc, char* argv[]) {
 	std::string input = string_input();
 	// сначала отправляем длину строки
 	int len = input.length();
-	send(Connection, (char*)&len, sizeof(int), NULL);
+	if (send(Connection, (char*)&len, sizeof(int), NULL) == -1)
+	{
+		std::cerr << "Error, server seems to be closed\n";
+		if (closesocket(Connection) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+		WSACleanup();
+		// чтобы консоль не закрывалась
+		std::string i;
+		std::getline(std::cin, i);
+		return 1;
+	}
 	// потом саму строку, но преобразованную в массив чар
 	char* msg;
 	msg = new char[len + 1];
 	for (int i = 0; i < len; ++i)
 		msg[i] = input[i];
 	msg[len] = '\0';
-	send(Connection, msg, len, NULL);
+	if (send(Connection, msg, len, NULL) == -1)
+	{
+		std::cerr << "Error, server seems to be closed\n";
+		if (closesocket(Connection) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+		WSACleanup();
+		// чтобы консоль не закрывалась
+		std::string i;
+		std::getline(std::cin, i);
+		return 1;
+	}
 	Map result;
 	// получаем длину результата
 	int res_len;
-	recv(Connection, (char*)&res_len, sizeof(int), NULL);
+	if (recv(Connection, (char*)&res_len, sizeof(int), NULL) == -1)
+	{
+		std::cerr << "Error, server seems to be closed\n";
+		if (closesocket(Connection) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+		WSACleanup();
+		// чтобы консоль не закрывалась
+		std::string i;
+		std::getline(std::cin, i);
+		return 1;
+	}
 	// теперь символы
 	char* symbols = new char[res_len];
-	recv(Connection, symbols, res_len, NULL);
+	if (recv(Connection, symbols, res_len, NULL) == -1)
+	{
+		std::cerr << "Error, server seems to be closed\n";
+		if (closesocket(Connection) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+		WSACleanup();
+		// чтобы консоль не закрывалась
+		std::string i;
+		std::getline(std::cin, i);
+		return 1;
+	}
 	res_len *= sizeof(int);
 	char* res = new char[res_len];
 	// теперь цифры, но сначала как массив чаров
-	recv(Connection, res, res_len, NULL);
+	if (recv(Connection, res, res_len, NULL) == -1)
+	{
+		std::cerr << "Error, server seems to be closed\n";
+		if (closesocket(Connection) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+		WSACleanup();
+		// чтобы консоль не закрывалась
+		std::string i;
+		std::getline(std::cin, i);
+		return 1;
+	}
 	// преобразовываем в массив интов
 	int* nums = (int*)res;
 	output(res_len, symbols, nums);
