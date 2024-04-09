@@ -59,6 +59,20 @@ void string_check(char* msg, Map& result) // подсчитывает колич
 	}
 }
 
+void output(int len, char* message, Map result)
+{
+	for (int i = 0; i < len; ++i)
+	{
+		std::cout << message[i];
+	}
+	std::cout << std::endl;
+	for (int i = 0; i < result.nums.size(); ++i)
+	{
+		std::cout << "Symbol: " << result.symbols[i] <<
+			" - " << result.nums[i] << std::endl;
+	}
+}
+
 bool check_input(std::string& input) // проверка на инт
 {
 	std::getline(std::cin, input);
@@ -118,25 +132,52 @@ int main(int argc, char* argv[])
 		if (!newConnection)
 		{
 			std::cout << "Error in connect!\n";
-			if (closesocket(sListen) == SOCKET_ERROR)
+			if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
 				std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
-			WSACleanup();
-			return 1;
+			if (n == 1)
+			{
+				WSACleanup();
+				return 1;
+			}
+			continue;
 		}
 		else
 		{
 			std::cout << "Client Connected!\n";
 			// получаем сначала длину строки
 			int len;
-			recv(newConnection, (char*)&len, sizeof(int), NULL);
+			if (recv(newConnection, (char*)&len, sizeof(int), NULL) == -1)
+			{
+				std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+					std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				if (n == 1)
+				{
+					WSACleanup();
+					return 1;
+				}
+				continue;
+			}
 			// затем саму строку
 			char* message;
 			message = new char[len + 1];
 			message[len] = '\0';
-			recv(newConnection, message, len, NULL);
+			if (recv(newConnection, message, len, NULL) == -1)
+			{
+				std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+					std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				if (n == 1)
+				{
+					WSACleanup();
+					return 1;
+				}
+				continue;
+			}
 			// проводим подсчёт символов
 			Map result;
 			string_check(message, result);
+			output(len, message, result);
 			// сохраняем длину отправляемого сообщения
 			int nums_res_len = result.nums.size();
 			int* nums = new int[nums_res_len];
@@ -148,16 +189,52 @@ int main(int argc, char* argv[])
 			}
 			char* nums_res = (char*)nums;
 			// отправляем длину
-			send(newConnection, (char*)&nums_res_len, sizeof(int), NULL);
+			if (send(newConnection, (char*)&nums_res_len, sizeof(int), NULL) == -1)
+			{
+				std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+					std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				if (n == 1)
+				{
+					WSACleanup();
+					return 1;
+				}
+				continue;
+			}
 			// отправляем символы отдельно
-			send(newConnection, symbols, nums_res_len, NULL);
+			if (send(newConnection, symbols, nums_res_len, NULL) == -1)
+			{
+				std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+					std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				if (n == 1)
+				{
+					WSACleanup();
+					return 1;
+				}
+				continue;
+			}
 			//отправляем цифры отдельно
-			send(newConnection, nums_res, sizeof(int)*nums_res_len, NULL);
+			if (send(newConnection, nums_res, sizeof(int) * nums_res_len, NULL) == -1)
+			{
+				std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+					std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				if (n == 1)
+				{
+					WSACleanup();
+					return 1;
+				}
+				continue;
+			}
 			delete[] nums;
 			delete[] symbols;
 		}
 		Connections[i] = newConnection;
 		++counter;
 	}
+	if (closesocket(sListen) == SOCKET_ERROR)
+		std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+	WSACleanup();
 	return 0;
 }
