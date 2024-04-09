@@ -1,4 +1,4 @@
-﻿#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "ws2_32.lib")
 #include <winsock2.h>
 #include <iostream>
 #include <string>
@@ -21,7 +21,6 @@
 доход получен.
 */
 
-#define SECOND 1000
 
 struct Tourist
 {
@@ -41,7 +40,10 @@ struct Tourist
 void output(int num, Tourist tourist)
 {
 	std::cout << "Tourist # " << num << " with " <<
-		tourist.money << tourist.in_hotel ? " is in hotel" : " is in savanna";
+		tourist.money;
+	if (tourist.in_hotel)
+		std::cout << " is in hotel\n";
+	else std::cout << " is in savanna\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -60,21 +62,79 @@ int main(int argc, char* argv[]) {
 	addr.sin_family = AF_INET;
 	SOCKET Connection = socket(AF_INET, SOCK_STREAM, NULL);
 	//проверка на подключение к серверу
-	if (connect(Connection, (SOCKADDR*)&addr, sizeof(addr))) {
-		std::cerr << "Error: failed connect to the server.\n";
+	if (connect(Connection, (SOCKADDR*)&addr, sizeof(addr))) 
+	{
+		std::cerr << "Error: failed to connect to the server.\n";
 		return 1;
 	}
-	std::cout << "Client Connected to server!\n";
+	HANDLE hSemaphore;
+	//открываем семафор
+	hSemaphore = OpenSemaphore(SYNCHRONIZE, FALSE, L"semaphore");
+	if (hSemaphore == NULL) {
+		std::cerr << "Error open semaphore.\n";
+		return GetLastError();
+	}
+	HANDLE pool[3] = {
+	OpenEvent(EVENT_ALL_ACCESS, FALSE, L"Available"),
+	OpenEvent(EVENT_ALL_ACCESS, FALSE, L"Tourist"),
+	OpenEvent(EVENT_ALL_ACCESS, FALSE, L"eeeeeeend")
+	};
+	for (int i = 0; i != 2; ++i)
+		if (!pool[i])
+			return GetLastError();
+	// останавливает выполнение программы пока семафор не окажется
+	// в сигнальном состоянии
+	WaitForSingleObject(hSemaphore, INFINITE);
 	Tourist tourist;
+	SetEvent(pool[0]); //устанавливаем событие в сигнальное состояние
 	int num_of_client;
+	SetEvent(pool[1]);
 	// сначала отправляем количество денег
-	send(Connection, (char*)&tourist.money, sizeof(int), NULL);
+	if (send(Connection, (char*)&tourist.money, sizeof(int), NULL) == -1)
+	{
+		std::cerr << "Error, server seems to be closed\n";
+		if (closesocket(Connection) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+		WSACleanup();
+		// чтобы консоль не закрывалась
+		std::string i;
+		std::getline(std::cin, i);
+		return 1;
+	}
+	std::cout << "Money sent successfully\n";
 	// получаем результат
-	recv(Connection, (char*)&tourist.in_hotel, sizeof(bool), NULL);
+	if (recv(Connection, (char*)&tourist.in_hotel, sizeof(bool), NULL) == -1)
+	{
+		std::cerr << "Error, server seems to be closed\n";
+		if (closesocket(Connection) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+		WSACleanup();
+		// чтобы консоль не закрывалась
+		std::string i;
+		std::getline(std::cin, i);
+		return 1;
+	}
+	std::cout << "Res received successfully\n";
 	// теперь номер клиента
-	recv(Connection, (char*)&num_of_client, sizeof(int), NULL);
+	if (recv(Connection, (char*)&num_of_client, sizeof(int), NULL) == -1)
+	{
+		std::cerr << "Error, server seems to be closed\n";
+		if (closesocket(Connection) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+		WSACleanup();
+		// чтобы консоль не закрывалась
+		std::string i;
+		std::getline(std::cin, i);
+		return 1;
+	}
+	if (!SetEvent(pool[2]))
+		//std::cerr << GetLastError << std::endl;;
+	std::cout << "Client num received successfully\n";
 	output(num_of_client, tourist);
-	std::cout << "Server has been stopped\n";
+	for (int i = 0; i < 3; ++i)
+		CloseHandle(pool[i]);
+	CloseHandle(hSemaphore);
+	std::cout << "CLient has been stopped\n";
 	if (closesocket(Connection) == SOCKET_ERROR)
 		std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
 	WSACleanup();
