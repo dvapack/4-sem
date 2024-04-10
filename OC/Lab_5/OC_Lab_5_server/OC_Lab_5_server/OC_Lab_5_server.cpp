@@ -39,8 +39,8 @@ struct Hotel
 
 void start_client()
 {
-	const char* navigation_command = "cd C:\\Users\\mserg\\source\\repos\\OC_Lab_5_client\\x64\\Debug";
-	const char* run_command = "start C:\\Users\\mserg\\source\\repos\\OC_Lab_5_client\\x64\\Debug\\OC_Lab_5_client.exe";
+	const char* navigation_command = "cd C:\\Users\\mserg\\source\\repos\\OC_Lab_5_client\\x64\\Release";
+	const char* run_command = "start C:\\Users\\mserg\\source\\repos\\OC_Lab_5_client\\x64\\Release\\OC_Lab_5_client.exe";
 	// проверка на случай непредвиденных обстоятельств
 	int navigation_failure = system(navigation_command);
 	if (navigation_failure)
@@ -148,42 +148,31 @@ int main(int argc, char* argv[])
 	std::vector <SOCKET> Sockets(16); //вектор для сокетов
 	size_t c_num = 0;
 	int n = input(); //для количества резидентов (клиентов)
-	HANDLE pool[3] = {
-	CreateEvent(NULL, FALSE, FALSE, L"Available"),
-	CreateEvent(NULL, FALSE, FALSE, L"Tourist"),
-	CreateEvent(NULL, FALSE, FALSE, L"eeeeeeend")
-	};
-
-	for (uint8_t i = 0; i < 2; ++i)
-		if (!pool[i])
-			std::cerr << GetLastError() << std::endl;
-	//задаем информацию для окна открытия
-	STARTUPINFO si;//структура
-	PROCESS_INFORMATION pi;// структура с информацией о процессе
-	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);// указываем размер
-	ZeroMemory(&pi, sizeof(pi));
+	HANDLE event = CreateEvent(NULL, FALSE, FALSE, L"Available");
+	if (!event)
+		std::cerr << GetLastError() << std::endl;
 	for (uint8_t i = 0; i < n; i++)
 	{ // окна для клиентов
 		start_client();
 	}
-	for (uint8_t i = 0; i < n; i++)
-	{ //сокеты для соединения с клиентом
-		Sockets[i] = accept(sListen, (SOCKADDR*)&addr, &sizeOfAddr);
-	}
-	while (n) 
-	{
-		//приостанавливает поток пока любой из объектов не перейдет
-		// в сигнальное состояние или не закончится время ожидания
-		int ind = WaitForMultipleObjects(3, pool, FALSE, INFINITE);
-		std::wcout << ind << std::endl;
-		if (ind == 0)
+		for (uint8_t i = 0; i < n; i++)
+		{ //сокеты для соединения с клиентом
+			Sockets[i] = accept(sListen, (SOCKADDR*)&addr, &sizeOfAddr);
+		}
+		while (n)
 		{
+			//приостанавливает поток пока любой из объектов не перейдет
+			// в сигнальное состояние или не закончится время ожидания
+			DWORD dwResult = 1;
+			while (dwResult != WAIT_OBJECT_0)
+			{
+				dwResult = WaitForSingleObject(hSemaphore, 1);
+				Sleep(300);
+			}
+			//WaitForSingleObject(hSemaphore, INFINITE); // Ожидание доступа к отелю
 			c_num = tourist_number;
 			std::cout << "Hotel is ready to serve a tourist!\n";
 			++tourist_number;
-		}
-		if (ind == 1) {
 			std::cout << "Client " << c_num << " is ready to connect.\n";
 			std::cout << "We receive info about tourist...\n";
 			// получаем количество денег
@@ -191,13 +180,13 @@ int main(int argc, char* argv[])
 			if (recv(Sockets[c_num], (char*)&money, sizeof(int), NULL) == -1)
 			{
 				std::cerr << "Error, client num " << c_num << " seems to be closed\n";
-					if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
-						std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
-					if (n == 1)
-					{
-						WSACleanup();
-							return 1;
-					}
+				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+					std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				if (n == 1)
+				{
+					WSACleanup();
+					return 1;
+				}
 				continue;
 			}
 			bool in_hotel = decision(money, hotel);
@@ -232,30 +221,27 @@ int main(int argc, char* argv[])
 			if (in_hotel)
 				std::cout << " is in hotel\n";
 			else std::cout << " is in savanna\n";
-		}
-		if (ind == 2)
-		{
 			std::cout << "Client " << c_num << " was disconnected.\n";
+
+			// Сброс события, указывающего на готовность обслужить туриста
+			SetEvent(event);
+			// Задержка для симуляции времени обработки запроса
+			Sleep(1000);
 			ReleaseSemaphore(hSemaphore, 1, NULL);
 			//отключение клиента
 			--n;
 		}
-	}
-	output(hotel, tourist_number);
-	std::cout << "Work completed successfully!\n";
-	// Close thread handles.
-	for (uint8_t i = 0; i < 3; ++i)
-	{
-		CloseHandle(pool[i]);
-	}
-	for (uint8_t i = 0; i <= c_num; ++i)
-	{
-		closesocket(Sockets[c_num]);
-	}
-	CloseHandle(hSemaphore);
-	if (closesocket(sListen) == SOCKET_ERROR)
-		std::cerr << "Failed to terminate connection.\n Error code: "
-		<< WSAGetLastError();
-	WSACleanup();
-	return 0;
+		output(hotel, tourist_number);
+		std::cout << "Work completed successfully!\n";
+		// Close thread handles.
+		CloseHandle(event);
+		for (uint8_t i = 0; i <= c_num; ++i)
+			closesocket(Sockets[c_num]);
+		CloseHandle(hSemaphore);
+		if (closesocket(sListen) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: "
+			<< WSAGetLastError();
+		WSACleanup();
+		return 0;
+
 }
