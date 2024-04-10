@@ -74,21 +74,14 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Error open semaphore.\n";
 		return GetLastError();
 	}
-	HANDLE pool[3] = {
-	OpenEvent(EVENT_ALL_ACCESS, FALSE, L"Available"),
-	OpenEvent(EVENT_ALL_ACCESS, FALSE, L"Tourist"),
-	OpenEvent(EVENT_ALL_ACCESS, FALSE, L"eeeeeeend")
-	};
-	for (int i = 0; i != 2; ++i)
-		if (!pool[i])
-			return GetLastError();
+	HANDLE event = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"Available");
+	if (!event)
+		std::cerr << GetLastError() << std::endl;
 	// останавливает выполнение программы пока семафор не окажется
 	// в сигнальном состоянии
 	WaitForSingleObject(hSemaphore, INFINITE);
 	Tourist tourist;
-	SetEvent(pool[0]); //устанавливаем событие в сигнальное состояние
 	int num_of_client;
-	SetEvent(pool[1]);
 	// сначала отправляем количество денег
 	if (send(Connection, (char*)&tourist.money, sizeof(int), NULL) == -1)
 	{
@@ -127,12 +120,11 @@ int main(int argc, char* argv[]) {
 		std::getline(std::cin, i);
 		return 1;
 	}
-	if (!SetEvent(pool[2]))
-		//std::cerr << GetLastError << std::endl;;
+	SetEvent(event);
 	std::cout << "Client num received successfully\n";
+		//std::cerr << GetLastError << std::endl;;
 	output(num_of_client, tourist);
-	for (int i = 0; i < 3; ++i)
-		CloseHandle(pool[i]);
+	CloseHandle(event);
 	CloseHandle(hSemaphore);
 	std::cout << "CLient has been stopped\n";
 	if (closesocket(Connection) == SOCKET_ERROR)
