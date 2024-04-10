@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <random>
 
 #pragma warning(disable: 4996)
 
@@ -26,16 +27,28 @@ struct Hotel
 	int income;
 	int tourists;
 	int cheep_available;
+	std::vector <int> cheep_days;
 	int medium_available;
+	std::vector <int> medium_days;
 	int luxury_available;
+	std::vector <int> luxury_days;
 
 	Hotel()
 	{
 		income = 0;
 		tourists = 0;
 		cheep_available = 4;
+		cheep_days.resize(4);
+		for (int i = 0; i < 4; ++i)
+			cheep_days[i] = 0;
 		medium_available = 2;
+		medium_days.resize(2);
+		for (int i = 0; i < 2; ++i)
+			medium_days[i] = 0;
 		luxury_available = 2;
+		luxury_days.resize(2);
+		for (int i = 0; i < 2; ++i)
+			luxury_days[i] = 0;;
 	}
 };
 
@@ -54,39 +67,99 @@ void start_client()
 	system(run_command);
 }
 
-void output(const Hotel& hotel)
+void output(const Hotel& hotel, int num)
 {
 	std::cout << "Income is: " << hotel.income << "\nThere were " <<
-		hotel.tourists << " tourists in this hotel\n";
+		hotel.tourists << " tourists in this hotel in " << num << " days\n";
 }
 
-bool decision(int money, Hotel& hotel)
+bool decision(int money, int days, Hotel& hotel)
 {
 	if (hotel.luxury_available)
 		if (money >= 900)
 		{
-			hotel.luxury_available--;
-			hotel.income += 900;
-			hotel.tourists++;
-			return true;
+			for (int i = 0; i < 2; ++i)
+			{
+				if (hotel.luxury_days[i] == 0)
+				{
+					hotel.luxury_available--;
+					hotel.luxury_days[i] = days;
+					hotel.income += days* 900;
+					hotel.tourists++;
+					std::cout << "## Luxury for " << days << " days ##\n";
+					std::cout << "## Availabe luxury: " << hotel.luxury_available << " rooms ##\n";
+					return true;
+				}
+			}
 		}
 	if (hotel.medium_available)
 		if (money >= 700)
 		{
-			hotel.medium_available--;
-			hotel.income += 700;
-			hotel.tourists++;
-			return true;
+			for (int i = 0; i < 2; ++i)
+			{
+				if (hotel.medium_days[i] == 0)
+				{
+					hotel.medium_available--;
+					hotel.medium_days[i] = days;
+					hotel.income += days * 700;
+					hotel.tourists++;
+					std::cout << "## Medium for " << days << " days ##\n";
+					std::cout << "## Availabe medium: " << hotel.medium_available << " rooms ##\n";
+					return true;
+				}
+			}
 		}
 	if (hotel.cheep_available)
 		if (money >= 500)
 		{
-			hotel.cheep_available--;
-			hotel.income += 500;
-			hotel.tourists++;
-			return true;
+			for (int i = 0; i < 4; ++i)
+			{
+				if (hotel.cheep_days[i] == 0)
+				{
+					hotel.cheep_available--;
+					hotel.cheep_days[i] = days;
+					hotel.income += days * 500;
+					hotel.tourists++;
+					std::cout << "## Cheep for " << days << " days ##\n";
+					std::cout << "## Availabe cheep: " << hotel.cheep_available << " rooms ##\n";
+					return true;
+				}
+			}
 		}
 	return false;
+}
+
+void day_pass(Hotel& hotel)
+{
+	for (int i = 0; i < 4; ++i)
+		if (hotel.cheep_days[i] != 0)
+		{
+			--hotel.cheep_days[i];
+			if (hotel.cheep_days[i] == 0)
+				++hotel.cheep_available;
+		}
+	for (int i = 0; i < 2; ++i)
+		if (hotel.medium_days[i] != 0)
+		{
+			--hotel.medium_days[i];
+			if (hotel.medium_days[i] == 0)
+				++hotel.medium_available;
+		}
+	for (int i = 0; i < 2; ++i)
+		if (hotel.luxury_days[i] != 0)
+		{
+			--hotel.luxury_days[i];
+			if (hotel.luxury_days[i] == 0)
+				++hotel.luxury_available;
+		}
+}
+
+int clients()
+{
+	std::random_device rd; // Получение случайного устройства
+	std::mt19937 gen(rd()); // Инициализация генератора случайных чисел
+	std::uniform_int_distribution<> dist(1, 16); // Равномерное распределение от 1 до 16
+	return dist(gen); // Генерация случайного числа
 }
 
 bool check_input(std::string& input) // проверка на инт
@@ -96,7 +169,7 @@ bool check_input(std::string& input) // проверка на инт
 		if (!isdigit(input[i]))
 			return false;
 	int n = stoi(input);
-	if (n >= 1 && n <= 16)
+	if (n >= 1 && n <= 30)
 		return true;
 	return false;
 }
@@ -104,9 +177,9 @@ bool check_input(std::string& input) // проверка на инт
 int input()
 {
 	std::string inp;
-	std::cout << "Enter a positive num 1 <= n <= 16: ";
+	std::cout << "Enter amout of days 1 <= n <= 30: ";
 	while (!check_input(inp))
-		std::cout << "Error! Enter a positive num 1 <= n <= 16\n";
+		std::cout << "Error! Enter a positive num 1 <= n <= 30\n";
 	return stoi(inp);
 }
 
@@ -151,34 +224,33 @@ int main(int argc, char* argv[])
 	size_t tourist_number = 0;
 	Hotel hotel;
 	std::vector <SOCKET> Sockets(16); //вектор для сокетов
-	size_t c_num = 0;
-	int n = input(); //для количества резидентов (клиентов)
-	HANDLE event = CreateEvent(NULL, FALSE, FALSE, L"Available");
-	if (!event)
-		std::cerr << GetLastError() << std::endl;
-	for (uint8_t i = 0; i < n; i++)
-	{ // окна для клиентов
-		start_client();
-	}
+	int num = input(); //для количества дней
+	int amount_of_sockets = 0;
+	for (int i = 0; i < num; ++i)
+	{
+		size_t c_num = 0;
+		std::cout << "########### DAY " << i + 1 << " ###########\n";
+		int n = clients();
+		amount_of_sockets = n;
+		std::cout << "Amount of clients: " << n << std::endl;
+		HANDLE event = CreateEvent(NULL, FALSE, FALSE, L"Available");
+		if (!event)
+			std::cerr << GetLastError() << std::endl;
+		for (uint8_t i = 0; i < n; i++)
+		{ // окна для клиентов
+			start_client();
+		}
 		for (uint8_t i = 0; i < n; i++)
 		{ //сокеты для соединения с клиентом
 			Sockets[i] = accept(sListen, (SOCKADDR*)&addr, &sizeOfAddr);
 		}
 		while (n)
 		{
-			//приостанавливает поток пока любой из объектов не перейдет
-			// в сигнальное состояние или не закончится время ожидания
-			/*DWORD dwResult = 1;
-			while (dwResult != WAIT_OBJECT_0)
-			{
-				dwResult = WaitForSingleObject(hSemaphore, 1);
-				Sleep(300);
-			}*/
+			std::cout << "###############################################################\n";
 			WaitForSingleObject(hSemaphore, 1); // Ожидание доступа к отелю
-			c_num = tourist_number;
 			std::cout << "Hotel is ready to serve a tourist!\n";
 			++tourist_number;
-			std::cout << "Client " << c_num << " is ready to connect.\n";
+			std::cout << "Client " << tourist_number << " is ready to connect.\n";
 			std::cout << "We receive info about tourist...\n";
 			// получаем количество денег
 			int money;
@@ -194,7 +266,22 @@ int main(int argc, char* argv[])
 				}
 				continue;
 			}
-			bool in_hotel = decision(money, hotel);
+			// получаем количество дней
+			int days;
+			if (recv(Sockets[c_num], (char*)&days, sizeof(int), NULL) == -1)
+			{
+				std::cerr << "Error, client num " << c_num << " seems to be closed\n";
+				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
+					std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				if (n == 1)
+				{
+					WSACleanup();
+					return 1;
+				}
+				continue;
+			}
+			// результат
+			bool in_hotel = decision(money, days, hotel);
 			// отправляем результат
 			if (send(Sockets[c_num], (char*)&in_hotel, sizeof(bool), NULL) == -1)
 			{
@@ -209,7 +296,7 @@ int main(int argc, char* argv[])
 				continue;
 			}
 			// теперь номер клиента
-			if (send(Sockets[c_num], (char*)&c_num, sizeof(size_t), NULL) == -1)
+			if (send(Sockets[c_num], (char*)&tourist_number, sizeof(size_t), NULL) == -1)
 			{
 				std::cerr << "Error, client num " << c_num << " seems to be closed\n";
 				if (n == 1 && (closesocket(sListen) == SOCKET_ERROR))
@@ -226,7 +313,7 @@ int main(int argc, char* argv[])
 			if (in_hotel)
 				std::cout << " is in hotel\n";
 			else std::cout << " is in savanna\n";
-			std::cout << "Client " << c_num << " was disconnected.\n";
+			std::cout << "Client " << tourist_number << " was disconnected.\n";
 
 			// Сброс события, указывающего на готовность обслужить туриста
 			SetEvent(event);
@@ -234,19 +321,23 @@ int main(int argc, char* argv[])
 			Sleep(100);
 			ReleaseSemaphore(hSemaphore, 1, NULL);
 			//отключение клиента
+			++c_num;
 			--n;
 		}
-		output(hotel);
-		std::cout << "Work completed successfully!\n";
-		// Close thread handles.
 		CloseHandle(event);
-		for (uint8_t i = 0; i <= c_num; ++i)
-			closesocket(Sockets[c_num]);
-		CloseHandle(hSemaphore);
-		if (closesocket(sListen) == SOCKET_ERROR)
-			std::cerr << "Failed to terminate connection.\n Error code: "
-			<< WSAGetLastError();
-		WSACleanup();
-		return 0;
+		day_pass(hotel);
+	}
+	std::cout << "###############################################################\n";
+	output(hotel, num);
+	std::cout << "Work completed successfully!\n";
+	// Close thread handles.
+	for (uint8_t i = 0; i < amount_of_sockets; ++i)
+		closesocket(Sockets[amount_of_sockets]);
+	CloseHandle(hSemaphore);
+	if (closesocket(sListen) == SOCKET_ERROR)
+		std::cerr << "Failed to terminate connection.\n Error code: "
+		<< WSAGetLastError();
+	WSACleanup();
+	return 0;
 
 }
