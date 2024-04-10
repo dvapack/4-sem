@@ -24,6 +24,7 @@
 struct Hotel
 {
 	int income;
+	int tourists;
 	int cheep_available;
 	int medium_available;
 	int luxury_available;
@@ -31,6 +32,7 @@ struct Hotel
 	Hotel()
 	{
 		income = 0;
+		tourists = 0;
 		cheep_available = 4;
 		medium_available = 2;
 		luxury_available = 2;
@@ -52,10 +54,10 @@ void start_client()
 	system(run_command);
 }
 
-void output(const Hotel& hotel, const int tourists)
+void output(const Hotel& hotel)
 {
 	std::cout << "Income is: " << hotel.income << "\nThere were " <<
-		tourists << " tourists in this hotel\n";
+		hotel.tourists << " tourists in this hotel\n";
 }
 
 bool decision(int money, Hotel& hotel)
@@ -65,6 +67,7 @@ bool decision(int money, Hotel& hotel)
 		{
 			hotel.luxury_available--;
 			hotel.income += 900;
+			hotel.tourists++;
 			return true;
 		}
 	if (hotel.medium_available)
@@ -72,6 +75,7 @@ bool decision(int money, Hotel& hotel)
 		{
 			hotel.medium_available--;
 			hotel.income += 700;
+			hotel.tourists++;
 			return true;
 		}
 	if (hotel.cheep_available)
@@ -79,6 +83,7 @@ bool decision(int money, Hotel& hotel)
 		{
 			hotel.cheep_available--;
 			hotel.income += 500;
+			hotel.tourists++;
 			return true;
 		}
 	return false;
@@ -163,13 +168,13 @@ int main(int argc, char* argv[])
 		{
 			//приостанавливает поток пока любой из объектов не перейдет
 			// в сигнальное состояние или не закончится время ожидания
-			DWORD dwResult = 1;
+			/*DWORD dwResult = 1;
 			while (dwResult != WAIT_OBJECT_0)
 			{
 				dwResult = WaitForSingleObject(hSemaphore, 1);
 				Sleep(300);
-			}
-			//WaitForSingleObject(hSemaphore, INFINITE); // Ожидание доступа к отелю
+			}*/
+			WaitForSingleObject(hSemaphore, 1); // Ожидание доступа к отелю
 			c_num = tourist_number;
 			std::cout << "Hotel is ready to serve a tourist!\n";
 			++tourist_number;
@@ -226,12 +231,12 @@ int main(int argc, char* argv[])
 			// Сброс события, указывающего на готовность обслужить туриста
 			SetEvent(event);
 			// Задержка для симуляции времени обработки запроса
-			Sleep(1000);
+			Sleep(100);
 			ReleaseSemaphore(hSemaphore, 1, NULL);
 			//отключение клиента
 			--n;
 		}
-		output(hotel, tourist_number);
+		output(hotel);
 		std::cout << "Work completed successfully!\n";
 		// Close thread handles.
 		CloseHandle(event);
