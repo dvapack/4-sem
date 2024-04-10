@@ -25,15 +25,18 @@
 struct Tourist
 {
 	int money;
+	int days;
 	bool in_hotel;
 
 	Tourist()
 	{
 		std::random_device rd; // Получение случайного устройства
 		std::mt19937 gen(rd()); // Инициализация генератора случайных чисел
-		std::uniform_int_distribution<> dist(0, 900); // Равномерное распределение от 0 до 900
-		money = dist(gen); // Генерация случайного числа
+		std::uniform_int_distribution<> dist1(500, 1000); // Равномерное распределение от 500 до 1000
+		money = dist1(gen); // Генерация случайного числа
 		in_hotel = false;
+		std::uniform_int_distribution<> dist2(1, 14); // Равномерное распределение от 1 до 14
+		days = dist2(gen);
 	}
 };
 
@@ -79,7 +82,7 @@ int main(int argc, char* argv[]) {
 		std::cerr << GetLastError() << std::endl;
 	// останавливает выполнение программы пока семафор не окажется
 	// в сигнальном состоянии
-	WaitForSingleObject(hSemaphore, INFINITE);
+	WaitForSingleObject(hSemaphore, 2000);
 	Tourist tourist;
 	int num_of_client;
 	// сначала отправляем количество денег
@@ -95,6 +98,19 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	std::cout << "Money sent successfully\n";
+	// отправляем количество дней
+	if (send(Connection, (char*)&tourist.days, sizeof(int), NULL) == -1)
+	{
+		std::cerr << "Error, server seems to be closed\n";
+		if (closesocket(Connection) == SOCKET_ERROR)
+			std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+		WSACleanup();
+		// чтобы консоль не закрывалась
+		std::string i;
+		std::getline(std::cin, i);
+		return 1;
+	}
+	std::cout << "Days sent successfully\n";
 	// получаем результат
 	if (recv(Connection, (char*)&tourist.in_hotel, sizeof(bool), NULL) == -1)
 	{
