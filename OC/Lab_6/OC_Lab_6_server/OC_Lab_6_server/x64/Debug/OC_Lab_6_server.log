@@ -1,8 +1,5 @@
 ﻿  MainForm.cpp
-C:\Users\mserg\source\repos\OC_Lab_6_server\OC_Lab_6_server\MainForm.h(577,22): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-  (компиляция исходного файла "MainForm.cpp")
-  
-C:\Users\mserg\source\repos\OC_Lab_6_server\OC_Lab_6_server\MainForm.h(505,26): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+C:\Users\mserg\source\repos\OC_Lab_6_server\OC_Lab_6_server\MainForm.h(152,27): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
   (компиляция исходного файла "MainForm.cpp")
   
   MainForm.obj : обнаружен модуль MSIL; для MSIL последовательная компоновка отключена; выполняется полная компоновка

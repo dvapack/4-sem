@@ -144,7 +144,7 @@ namespace OCLab6server {
 			WSAData wsaData; //создаем структуру для загрузки
 			WORD DLLVersion = MAKEWORD(2, 1); // Версия библиотеки winsock
 			if (WSAStartup(DLLVersion, &wsaData) != 0) { // проверка подключения
-				std::cerr << "Error: failed to link library.\n";
+				//std::cerr << "Error: failed to link library.\n";
 			}
 			//Заполняем информацию об адресе сокета
 			SOCKADDR_IN addr;
@@ -155,12 +155,12 @@ namespace OCLab6server {
 			SOCKET sListen = socket(AF_INET, SOCK_STREAM, NULL); //сокет для прослушивания порта
 			if (bind(sListen, (SOCKADDR*)&addr, sizeOfAddr) == SOCKET_ERROR) {
 				//привязка адреса сокету
-				printf("Error bind %d\n", WSAGetLastError());
+				//printf("Error bind %d\n", WSAGetLastError());
 				closesocket(sListen);
 				WSACleanup();
 			} //подключение прослушивания с максимальной очередью
 			if (listen(sListen, SOMAXCONN) == SOCKET_ERROR) {
-				std::cout << "Listen failed;\n";
+				//std::cout << "Listen failed;\n";
 				closesocket(sListen);
 				WSACleanup();
 			}
@@ -171,7 +171,7 @@ namespace OCLab6server {
 				newConnection = accept(sListen, (SOCKADDR*)&addr, &sizeOfAddr);
 				if (!newConnection)
 				{
-					std::cout << "Error in connect!\n";
+					//std::cout << "Error in connect!\n";
 					if (clients_num == 1 && (closesocket(sListen) == SOCKET_ERROR))
 						std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
 					if (clients_num == 1)
@@ -188,9 +188,9 @@ namespace OCLab6server {
 					int len;
 					if (recv(newConnection, (char*)&len, sizeof(int), NULL) == -1)
 					{
-						std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+						//std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
 						if (clients_num == 1 && (closesocket(sListen) == SOCKET_ERROR))
-							std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+							//std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
 						if (clients_num == 1)
 						{
 							WSACleanup();
@@ -204,9 +204,9 @@ namespace OCLab6server {
 					message[len] = '\0';
 					if (recv(newConnection, message, len, NULL) == -1)
 					{
-						std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+						//std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
 						if (clients_num == 1 && (closesocket(sListen) == SOCKET_ERROR))
-							std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+							//std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
 						if (clients_num == 1)
 						{
 							WSACleanup();
@@ -219,20 +219,20 @@ namespace OCLab6server {
 					output(len, message);
 					// сохраняем длину отправляемого сообщения
 					int nums_res_len = nums.Count;
-					int* nums = new int[nums_res_len];
-					char* symbols = new char[nums_res_len];
+					int* numbers = new int[nums_res_len];
+					char* Symbols = new char[nums_res_len];
 					for (int i = 0; i < nums_res_len; ++i)
 					{
-						nums[i] = nums[i];
-						symbols[i] = symbols[i];
+						numbers[i] = nums[i];
+						Symbols[i] = symbols[i];
 					}
-					char* nums_res = (char*)nums;
+					char* nums_res = (char*)numbers;
 					// отправляем длину
 					if (send(newConnection, (char*)&nums_res_len, sizeof(int), NULL) == -1)
 					{
-						std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+						//std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
 						if (clients_num == 1 && (closesocket(sListen) == SOCKET_ERROR))
-							std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+							//std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
 						if (clients_num == 1)
 						{
 							WSACleanup();
@@ -241,11 +241,11 @@ namespace OCLab6server {
 						continue;
 					}
 					// отправляем символы отдельно
-					if (send(newConnection, symbols, nums_res_len, NULL) == -1)
+					if (send(newConnection, Symbols, nums_res_len, NULL) == -1)
 					{
-						std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+						//std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
 						if (clients_num == 1 && (closesocket(sListen) == SOCKET_ERROR))
-							std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+							//std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
 						if (clients_num == 1)
 						{
 							WSACleanup();
@@ -256,9 +256,9 @@ namespace OCLab6server {
 					//отправляем цифры отдельно
 					if (send(newConnection, nums_res, sizeof(int) * nums_res_len, NULL) == -1)
 					{
-						std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
+						//std::cerr << "Error, client num " << i + 1 << " seems to be closed\n";
 						if (clients_num == 1 && (closesocket(sListen) == SOCKET_ERROR))
-							std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+							//std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
 						if (clients_num == 1)
 						{
 							WSACleanup();
@@ -273,7 +273,7 @@ namespace OCLab6server {
 				++counter;
 			}
 			if (closesocket(sListen) == SOCKET_ERROR)
-				std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
+				//std::cerr << "Failed to terminate connection.\n Error code: " << WSAGetLastError();
 			WSACleanup();
 		}
 
@@ -504,7 +504,7 @@ namespace OCLab6server {
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(242)), static_cast<System::Int32>(static_cast<System::Byte>(242)),
 				static_cast<System::Int32>(static_cast<System::Byte>(242)));
-			this->ClientSize = System::Drawing::Size(750, 561);
+			this->ClientSize = System::Drawing::Size(750, 560);
 			this->Controls->Add(this->clients_amount_input_button);
 			this->Controls->Add(this->text_clients_max_amount);
 			this->Controls->Add(this->log_output);
@@ -564,7 +564,7 @@ namespace OCLab6server {
 			{
 				clients_num = System::Convert::ToInt32(inp);
 				this->input_client_num->ReadOnly = true;
-				text_clients_max_amount->Text = "Количество клиентов: " + clients_num;
+				text_clients_max_amount->Text = "Количество клиентов: " + System::Convert::ToString(clients_num);
 				main_function();
 			}
 		}
