@@ -1,0 +1,79 @@
+﻿  MyForm.cpp
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(376,24): error C2535: void OCLab6client::MyForm::header_server_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(374,24):
+   см. объявление "OCLab6client::MyForm::header_server_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(378,24): error C2535: void OCLab6client::MyForm::header_server_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(374,24):
+   см. объявление "OCLab6client::MyForm::header_server_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(382,24): error C2535: void OCLab6client::MyForm::header_server_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(374,24):
+   см. объявление "OCLab6client::MyForm::header_server_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(384,24): error C2535: void OCLab6client::MyForm::text_input_client_num_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(380,24):
+   см. объявление "OCLab6client::MyForm::text_input_client_num_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(386,24): error C2535: void OCLab6client::MyForm::header_server_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(374,24):
+   см. объявление "OCLab6client::MyForm::header_server_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(388,24): error C2535: void OCLab6client::MyForm::text_input_client_num_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(380,24):
+   см. объявление "OCLab6client::MyForm::text_input_client_num_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(390,24): error C2535: void OCLab6client::MyForm::header_server_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(374,24):
+   см. объявление "OCLab6client::MyForm::header_server_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(392,24): error C2535: void OCLab6client::MyForm::text_input_client_num_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(380,24):
+   см. объявление "OCLab6client::MyForm::text_input_client_num_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(396,24): error C2535: void OCLab6client::MyForm::header_server_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(374,24):
+   см. объявление "OCLab6client::MyForm::header_server_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(398,24): error C2535: void OCLab6client::MyForm::text_input_client_num_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(380,24):
+   см. объявление "OCLab6client::MyForm::text_input_client_num_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(400,24): error C2535: void OCLab6client::MyForm::text_current_client_Click(System::Object ^,System::EventArgs ^): функция-член уже определена или объявлена
+  (компиляция исходного файла "MyForm.cpp")
+  C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(394,24):
+   см. объявление "OCLab6client::MyForm::text_current_client_Click"
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(102,24): error C3861: string_input: идентификатор не найден
+  (компиляция исходного файла "MyForm.cpp")
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(104,12): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+  (компиляция исходного файла "MyForm.cpp")
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(133,4): error C2065: Map: необъявленный идентификатор
+  (компиляция исходного файла "MyForm.cpp")
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(133,8): error C2146: синтаксическая ошибка: отсутствие ";" перед идентификатором "result"
+  (компиляция исходного файла "MyForm.cpp")
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(133,8): error C2065: result: необъявленный идентификатор
+  (компиляция исходного файла "MyForm.cpp")
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(92,27): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  (компиляция исходного файла "MyForm.cpp")
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(6,24): error C1075: "{": не найдена несоответствующая лексема
+  (компиляция исходного файла "MyForm.cpp")
+  
+  .NETFramework,Version=v4.7.2.AssemblyAttributes.cpp
+  Создание кода...
