@@ -1,0 +1,3 @@
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\x64\Debug\OC_Lab_6_client.vcxproj.AssemblyReference.cache
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\x64\Debug\OCLab6client.MyForm.resources
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\x64\Debug\OC_Lab_6_client.vcxproj.GenerateResource.cache

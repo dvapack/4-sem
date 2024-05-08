@@ -1,0 +1,9 @@
+﻿  MainForm.cpp
+C:\Users\mserg\source\repos\OC_Lab_6_server\OC_Lab_6_server\MainForm.h(82,63): warning C4996: 'ctime': This function or variable may be unsafe. Consider using ctime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  (компиляция исходного файла "MainForm.cpp")
+  
+C:\Users\mserg\source\repos\OC_Lab_6_server\OC_Lab_6_server\MainForm.h(170,27): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  (компиляция исходного файла "MainForm.cpp")
+  
+  MainForm.obj : обнаружен модуль MSIL; для MSIL последовательная компоновка отключена; выполняется полная компоновка
+  OC_Lab_6_server.vcxproj -> C:\Users\mserg\source\repos\OC_Lab_6_server\x64\Debug\OC_Lab_6_server.exe

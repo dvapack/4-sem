@@ -1,0 +1,9 @@
+﻿  MyForm.cpp
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(124,22): warning C4244: =: преобразование "wchar_t" в "char", возможна потеря данных
+  (компиляция исходного файла "MyForm.cpp")
+  
+C:\Users\mserg\source\repos\OC_Lab_6_client\OC_Lab_6_client\MyForm.h(94,30): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  (компиляция исходного файла "MyForm.cpp")
+  
+  MyForm.obj : обнаружен модуль MSIL; для MSIL последовательная компоновка отключена; выполняется полная компоновка
+  OC_Lab_6_client.vcxproj -> C:\Users\mserg\source\repos\OC_Lab_6_client\x64\Debug\OC_Lab_6_client.exe
